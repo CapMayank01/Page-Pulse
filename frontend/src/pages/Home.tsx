@@ -27,7 +27,9 @@ export const copy = {
 
   whyDifferent: {
     kicker: "Why it's different",
-    heading: "A score means nothing without the reasoning behind it.",
+    headingPrefix: "A score means nothing without the ",
+    headingAccent: "reasoning",
+    headingSuffix: " behind it.",
     body: 'Most audit tools hand you a grade and leave you guessing. Page Pulse\'s "Why this score?" panel shows the exact checks run and the exact points lost — so a 62 isn\'t a mystery, it\'s a list you can act on. Every deduction is unit-tested, so the math you see is math you can verify.',
   },
 
@@ -142,7 +144,9 @@ export default function Home() {
                 {copy.whyDifferent.kicker}
               </span>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>
-                {copy.whyDifferent.heading}
+                {copy.whyDifferent.headingPrefix}
+                <span style={{ color: 'var(--accent-pulse)' }}>{copy.whyDifferent.headingAccent}</span>
+                {copy.whyDifferent.headingSuffix}
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>
                 {copy.whyDifferent.body}
