@@ -4,8 +4,37 @@ import ReportCard from '../components/ReportCard';
 import ErrorBanner from '../components/ErrorBanner';
 import Loader from '../components/Loader';
 import { requestAudit, AuditReport } from '../api/auditClient';
-import { useAuth } from '../context/AuthContext';
-import { Zap, ShieldCheck, BarChart3 } from 'lucide-react';
+import { HelpCircle, ShieldAlert, Activity, History } from 'lucide-react';
+
+export const copy = {
+  hero: {
+    headlinePrefix: "See ",
+    headlineAccent: "exactly why",
+    headlineSuffix: " your site scores the way it does.",
+    subhead:
+      "Page Pulse audits any page's SEO health and shows the full math behind every point. No hidden formula, no vague grade — just a clear readout of what's working and what isn't.",
+  },
+
+  howItWorks: {
+    heading: "Enter a URL. Get a diagnosis, not just a number.",
+    body: "Page Pulse checks your page the way a careful reviewer would — structure, content, and performance — then shows its work. Every deduction is labeled. Every point is accounted for.",
+  },
+
+  scoreBreakdown: {
+    heading: "A score means nothing without the reasoning behind it.",
+    body: 'Most audit tools hand you a grade and leave you guessing. Page Pulse\'s "Why this score?" panel shows the exact checks run and the exact points lost — so a 62 isn\'t a mystery, it\'s a list you can act on.',
+  },
+
+  security: {
+    heading: "Secure by default. Tested, not assumed.",
+    body: "Cookie-based auth, rate-limited endpoints, redacted logs — the parts of this system that don't show up on screen were built with the same care as the parts that do. The scoring math is unit-tested to guarantee the numbers always add up.",
+  },
+
+  history: {
+    heading: "Your site's history, not just its snapshot.",
+    body: "Every audit is saved. Watch scores shift as you make changes, and catch regressions before they become a pattern.",
+  },
+};
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -33,9 +62,13 @@ export default function Home() {
   return (
     <div>
       <section className="hero-section">
-        <h1 className="hero-title">Instant SEO & Web Health Scanner</h1>
+        <h1 className="hero-title">
+          {copy.hero.headlinePrefix}
+          <span style={{ color: 'var(--accent-pulse)' }}>{copy.hero.headlineAccent}</span>
+          {copy.hero.headlineSuffix}
+        </h1>
         <p className="hero-subtitle">
-          Enter any URL to fetch HTTP response time, title, meta descriptions, heading structures, image alt text compliance, and a composite 0–100 health score.
+          {copy.hero.subhead}
         </p>
 
         <UrlForm onSubmit={handleAuditSubmit} isLoading={loading} />
@@ -50,32 +83,50 @@ export default function Home() {
       {!loading && !report && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '3rem' }}>
           <div className="glass-card">
-            <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Zap size={22} />
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(61, 220, 151, 0.1)', color: 'var(--accent-pulse)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <HelpCircle size={22} />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>Real-time Parsing</h3>
-            <p style={{ color: '#9ca3af', fontSize: '0.9rem', lineHeight: 1.5 }}>
-              Executes high-speed server-side HTML scraping with Cheerio and calculates key SEO diagnostic indicators instantly.
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>
+              {copy.howItWorks.heading}
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              {copy.howItWorks.body}
             </p>
           </div>
 
           <div className="glass-card">
-            <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <ShieldCheck size={22} />
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(61, 220, 151, 0.1)', color: 'var(--accent-pulse)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <Activity size={22} />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>SSRF & Timeout Protection</h3>
-            <p style={{ color: '#9ca3af', fontSize: '0.9rem', lineHeight: 1.5 }}>
-              Hardened against internal host exploits, private network ranges, non-HTML payloads, and response timeouts.
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>
+              {copy.scoreBreakdown.heading}
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              {copy.scoreBreakdown.body}
             </p>
           </div>
 
           <div className="glass-card">
-            <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <BarChart3 size={22} />
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(61, 220, 151, 0.1)', color: 'var(--accent-pulse)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <ShieldAlert size={22} />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>History & Analytics</h3>
-            <p style={{ color: '#9ca3af', fontSize: '0.9rem', lineHeight: 1.5 }}>
-              Create an account to automatically save your audit logs and visualize site health trends over time.
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>
+              {copy.security.heading}
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              {copy.security.body}
+            </p>
+          </div>
+
+          <div className="glass-card">
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(61, 220, 151, 0.1)', color: 'var(--accent-pulse)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <History size={22} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>
+              {copy.history.heading}
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              {copy.history.body}
             </p>
           </div>
         </div>
