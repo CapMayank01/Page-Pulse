@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AuditReport } from '../api/auditClient';
 import ScoreGauge from './ScoreGauge';
 import { Clock, Heading1, Image, FileText, CheckCircle2, XCircle, AlertCircle, Info, Globe, ShieldCheck } from 'lucide-react';
@@ -8,6 +8,7 @@ interface ReportCardProps {
 }
 
 export default function ReportCard({ report }: ReportCardProps) {
+  const [expanded, setExpanded] = useState(false);
   // Helper to render pass/fail chip
   const renderStatusChip = (passed: boolean, label: string, details: string, isWarning = false) => {
     const Icon = passed ? CheckCircle2 : (isWarning ? AlertCircle : XCircle);
@@ -70,7 +71,75 @@ export default function ReportCard({ report }: ReportCardProps) {
       </div>
 
       <div className="report-grid">
-        <ScoreGauge score={report.score} grade={report.grade} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', alignSelf: 'start' }}>
+          <ScoreGauge score={report.score} grade={report.grade} />
+          {report.breakdown && report.breakdown.length > 0 && (
+            <div style={{ width: '100%', textAlign: 'center' }}>
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="btn-secondary"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.4rem 0.75rem',
+                  border: '1px dashed var(--border-color)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: 'var(--accent-pulse)'
+                }}
+                aria-expanded={expanded}
+              >
+                {expanded ? 'Hide scoring math' : 'Why this score?'}
+              </button>
+              {expanded && (
+                <div
+                  style={{
+                    marginTop: '0.75rem',
+                    width: '100%',
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    padding: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {report.breakdown.map((item, idx) => {
+                      const itemColor = item.status === 'pass' 
+                        ? 'var(--grade-a)' 
+                        : (item.status === 'warn' ? 'var(--grade-c)' : 'var(--grade-f)');
+                      const prefixIcon = item.status === 'pass' ? '✓' : (item.status === 'warn' ? '⚠' : '✕');
+                      return (
+                        <li
+                          key={idx}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '0.7rem',
+                            fontFamily: 'var(--font-display)',
+                            borderBottom: idx < report.breakdown!.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
+                            paddingBottom: '0.35rem',
+                            color: 'var(--text-primary)'
+                          }}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', textAlign: 'left' }}>
+                            <span style={{ color: itemColor, fontWeight: 800 }}>{prefixIcon}</span>
+                            {item.label}
+                          </span>
+                          <span style={{ color: item.points < 0 ? 'var(--grade-f)' : (item.points === 0 ? 'var(--text-muted)' : 'var(--grade-a)'), fontWeight: 700, paddingLeft: '0.5rem' }}>
+                            {item.points > 0 ? `+${item.points}` : (item.points === 0 ? '—' : item.points)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Section 1: Content */}

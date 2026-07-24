@@ -71,6 +71,7 @@ export async function runAudit(req: AuthenticatedRequest, res: Response, next: N
       contentType: fetchResult.contentType,
       score: scoreResult.score,
       grade: scoreResult.grade,
+      breakdown: scoreResult.breakdownItems,
       savedToHistory,
     });
   } catch (err) {

@@ -16,6 +16,11 @@ export interface AuditReport {
   score: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
   savedToHistory: boolean;
+  breakdown?: Array<{
+    label: string;
+    points: number;
+    status: 'pass' | 'warn' | 'fail';
+  }>;
 }
 
 export interface ApiErrorResponse {

@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthenticatedRequest } from '../middleware/authGuard';
 import { AppError } from '../errors/AppError';
+import { calculateScore } from '../services/scoring.service';
 
 const prisma = new PrismaClient();
 
@@ -22,8 +23,23 @@ export async function getHistory(req: AuthenticatedRequest, res: Response, next:
       }),
     ]);
 
+    const auditsWithBreakdown = audits.map((audit) => {
+      const scoreResult = calculateScore({
+        title: audit.title,
+        metaDescription: audit.metaDescription,
+        h1Count: audit.h1Count,
+        imagesMissingAlt: audit.imagesMissingAlt,
+        responseTimeMs: audit.responseTimeMs,
+        wordCount: audit.wordCount,
+      });
+      return {
+        ...audit,
+        breakdown: scoreResult.breakdownItems,
+      };
+    });
+
     res.status(200).json({
-      data: audits,
+      data: auditsWithBreakdown,
       pagination: {
         total,
         page,
@@ -49,7 +65,19 @@ export async function getAuditById(req: AuthenticatedRequest, res: Response, nex
       throw new AppError('INVALID_URL', 'Audit record not found.', 404);
     }
 
-    res.status(200).json(audit);
+    const scoreResult = calculateScore({
+      title: audit.title,
+      metaDescription: audit.metaDescription,
+      h1Count: audit.h1Count,
+      imagesMissingAlt: audit.imagesMissingAlt,
+      responseTimeMs: audit.responseTimeMs,
+      wordCount: audit.wordCount,
+    });
+
+    res.status(200).json({
+      ...audit,
+      breakdown: scoreResult.breakdownItems,
+    });
   } catch (err) {
     next(err);
   }

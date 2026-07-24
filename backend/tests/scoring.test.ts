@@ -129,4 +129,18 @@ describe('Scoring Service', () => {
 
     expect(resultHalf.breakdown.responseTimePoints).toBe(10);
   });
+
+  it('should guarantee that the sum of points in breakdownItems matches the score exactly', () => {
+    const testCases = [
+      { title: 'T', metaDescription: 'M', h1Count: 1, imagesMissingAlt: 0, responseTimeMs: 100, wordCount: 400 },
+      { title: '', metaDescription: '', h1Count: 0, imagesMissingAlt: 5, responseTimeMs: 3200, wordCount: 10 },
+      { title: 'T', metaDescription: null, h1Count: 2, imagesMissingAlt: 2, responseTimeMs: 1500, wordCount: 200 }
+    ];
+
+    testCases.forEach((tc) => {
+      const result = calculateScore(tc);
+      const sum = result.breakdownItems.reduce((acc, item) => acc + item.points, 0);
+      expect(Math.max(0, Math.round(sum))).toBe(result.score);
+    });
+  });
 });
