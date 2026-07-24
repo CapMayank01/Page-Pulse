@@ -6,20 +6,20 @@ export interface AuditReport {
   id?: string;
   url: string;
   status: number;
-  responseTimeMs: number;
+  responseTime: number;
   title: string | null;
   metaDescription: string | null;
   h1Count: number;
-  imagesMissingAlt: number;
+  missingAltImages: number;
   wordCount: number;
   contentType: string;
   score: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
   savedToHistory: boolean;
   breakdown?: Array<{
-    label: string;
+    check: string;
     points: number;
-    status: 'pass' | 'warn' | 'fail';
+    status: 'Passed' | 'Warning' | 'Failed';
   }>;
 }
 

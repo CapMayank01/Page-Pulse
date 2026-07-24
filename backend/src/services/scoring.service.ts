@@ -21,69 +21,69 @@ export interface ScoreResult {
     wordCountPoints: number;
   };
   breakdownItems: Array<{
-    label: string;
+    check: string;
     points: number;
-    status: 'pass' | 'warn' | 'fail';
+    status: 'Passed' | 'Warning' | 'Failed';
   }>;
 }
 
 export function calculateScore(input: ScoreInput): ScoreResult {
-  const breakdownItems: Array<{ label: string; points: number; status: 'pass' | 'warn' | 'fail' }> = [];
+  const breakdownItems: Array<{ check: string; points: number; status: 'Passed' | 'Warning' | 'Failed' }> = [];
 
   // Title (15 pts)
   const titlePoints = input.title && input.title.trim().length > 0 ? 15 : 0;
   if (titlePoints > 0) {
-    breakdownItems.push({ label: 'Title tag present & non-empty', points: 15, status: 'pass' });
+    breakdownItems.push({ check: 'Title Tag', points: 15, status: 'Passed' });
   } else {
-    breakdownItems.push({ label: 'Title tag missing or empty', points: 0, status: 'fail' });
+    breakdownItems.push({ check: 'Title Tag', points: 0, status: 'Failed' });
   }
 
   // Meta Description (15 pts)
   const metaPoints = input.metaDescription && input.metaDescription.trim().length > 0 ? 15 : 0;
   if (metaPoints > 0) {
-    breakdownItems.push({ label: 'Meta description present & non-empty', points: 15, status: 'pass' });
+    breakdownItems.push({ check: 'Meta Description', points: 15, status: 'Passed' });
   } else {
-    breakdownItems.push({ label: 'Meta description missing or empty', points: 0, status: 'fail' });
+    breakdownItems.push({ check: 'Meta Description', points: 0, status: 'Failed' });
   }
 
   // Exactly 1 H1 (20 pts)
   const h1Points = input.h1Count === 1 ? 20 : 0;
   if (h1Points > 0) {
-    breakdownItems.push({ label: 'Exactly 1 H1 heading present', points: 20, status: 'pass' });
+    breakdownItems.push({ check: 'H1 Headings', points: 20, status: 'Passed' });
   } else {
-    breakdownItems.push({ label: `H1 heading count is ${input.h1Count} (must be exactly 1)`, points: 0, status: 'fail' });
+    breakdownItems.push({ check: 'H1 Headings', points: 0, status: 'Failed' });
   }
 
   // Response time (20 pts if <500ms, linear to 0 at >=3000ms)
   let responseTimePoints = 0;
   if (input.responseTimeMs < 500) {
     responseTimePoints = 20;
-    breakdownItems.push({ label: `Response time is ${input.responseTimeMs}ms (<500ms)`, points: 20, status: 'pass' });
+    breakdownItems.push({ check: 'Response Time', points: 20, status: 'Passed' });
   } else if (input.responseTimeMs >= 3000) {
     responseTimePoints = 0;
-    breakdownItems.push({ label: `Response time is ${input.responseTimeMs}ms (>=3000ms)`, points: 0, status: 'fail' });
+    breakdownItems.push({ check: 'Response Time', points: 0, status: 'Failed' });
   } else {
     const fraction = (3000 - input.responseTimeMs) / 2500;
     responseTimePoints = Math.round(20 * fraction * 100) / 100;
-    breakdownItems.push({ label: `Response time is ${input.responseTimeMs}ms (500ms - 3000ms)`, points: responseTimePoints, status: 'warn' });
+    breakdownItems.push({ check: 'Response Time', points: responseTimePoints, status: 'Warning' });
   }
 
   // Word count >= 300 (20 pts)
   const wordCountPoints = input.wordCount >= 300 ? 20 : 0;
   if (wordCountPoints > 0) {
-    breakdownItems.push({ label: `Word count is ${input.wordCount} (>=300)`, points: 20, status: 'pass' });
+    breakdownItems.push({ check: 'Word Count', points: 20, status: 'Passed' });
   } else {
-    breakdownItems.push({ label: `Word count is ${input.wordCount} (under 300)`, points: 0, status: 'fail' });
+    breakdownItems.push({ check: 'Word Count', points: 0, status: 'Failed' });
   }
 
   // Images missing alt: -5 each, up to -20 deduction
   const imageDeduction = Math.min(20, input.imagesMissingAlt * 5);
   if (input.imagesMissingAlt === 0) {
-    breakdownItems.push({ label: 'All images have alternative descriptions', points: 0, status: 'pass' });
+    breakdownItems.push({ check: 'Image Alt Tags', points: 0, status: 'Passed' });
   } else if (input.imagesMissingAlt <= 3) {
-    breakdownItems.push({ label: `${input.imagesMissingAlt} image(s) missing alt text`, points: -imageDeduction, status: 'warn' });
+    breakdownItems.push({ check: 'Image Alt Tags', points: -imageDeduction, status: 'Warning' });
   } else {
-    breakdownItems.push({ label: `${input.imagesMissingAlt} image(s) missing alt text`, points: -imageDeduction, status: 'fail' });
+    breakdownItems.push({ check: 'Image Alt Tags', points: -imageDeduction, status: 'Failed' });
   }
 
   const rawTotal = titlePoints + metaPoints + h1Points + responseTimePoints + wordCountPoints - imageDeduction;

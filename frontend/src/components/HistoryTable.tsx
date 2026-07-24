@@ -60,9 +60,9 @@ export default function HistoryTable({ audits, onDelete, onSelect }: HistoryTabl
                   {audit.grade}
                 </span>
               </td>
-              <td className="monospace-cell">{audit.responseTimeMs} ms</td>
+              <td className="monospace-cell">{audit.responseTime} ms</td>
               <td>
-                H1: {audit.h1Count} | Missing Alt: {audit.imagesMissingAlt}
+                H1: {audit.h1Count} | Missing Alt: {audit.missingAltImages}
               </td>
               <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 {audit.id ? new Date().toLocaleDateString() : 'Recent'}

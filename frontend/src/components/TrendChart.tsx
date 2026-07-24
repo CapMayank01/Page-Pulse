@@ -14,7 +14,7 @@ export default function TrendChart({ audits }: TrendChartProps) {
     name: `#${idx + 1}`,
     url: item.url,
     score: item.score,
-    responseTimeMs: item.responseTimeMs,
+    responseTime: item.responseTime,
   }));
 
   return (
@@ -47,7 +47,7 @@ export default function TrendChart({ audits }: TrendChartProps) {
             <Line 
               yAxisId="right" 
               type="monotone" 
-              dataKey="responseTimeMs" 
+              dataKey="responseTime" 
               stroke="#06b6d4" 
               strokeWidth={2} 
               name="Response Time (ms)" 

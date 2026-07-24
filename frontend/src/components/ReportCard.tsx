@@ -48,8 +48,8 @@ export default function ReportCard({ report }: ReportCardProps) {
   const isMetaPassed = !!report.metaDescription && report.metaDescription.trim().length > 0;
   const isWordCountPassed = report.wordCount >= 300;
   const isH1Passed = report.h1Count === 1;
-  const isAltPassed = report.imagesMissingAlt === 0;
-  const isResponseTimePassed = report.responseTimeMs < 500;
+  const isAltPassed = report.missingAltImages === 0;
+  const isResponseTimePassed = report.responseTime < 500;
   const isStatusPassed = report.status === 200;
 
   return (
@@ -106,10 +106,10 @@ export default function ReportCard({ report }: ReportCardProps) {
                 >
                   <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {report.breakdown.map((item, idx) => {
-                      const itemColor = item.status === 'pass' 
+                      const itemColor = item.status === 'Passed' 
                         ? 'var(--grade-a)' 
-                        : (item.status === 'warn' ? 'var(--grade-c)' : 'var(--grade-f)');
-                      const prefixIcon = item.status === 'pass' ? '✓' : (item.status === 'warn' ? '⚠' : '✕');
+                        : (item.status === 'Warning' ? 'var(--grade-c)' : 'var(--grade-f)');
+                      const prefixIcon = item.status === 'Passed' ? '✓' : (item.status === 'Warning' ? '⚠' : '✕');
                       return (
                         <li
                           key={idx}
@@ -126,7 +126,7 @@ export default function ReportCard({ report }: ReportCardProps) {
                         >
                           <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', textAlign: 'left' }}>
                             <span style={{ color: itemColor, fontWeight: 800 }}>{prefixIcon}</span>
-                            {item.label}
+                            {item.check}
                           </span>
                           <span style={{ color: item.points < 0 ? 'var(--grade-f)' : (item.points === 0 ? 'var(--text-muted)' : 'var(--grade-a)'), fontWeight: 700, paddingLeft: '0.5rem' }}>
                             {item.points > 0 ? `+${item.points}` : (item.points === 0 ? '—' : item.points)}
@@ -177,8 +177,8 @@ export default function ReportCard({ report }: ReportCardProps) {
               )}
               {renderStatusChip(
                 isAltPassed, 
-                isAltPassed ? 'All Images Accessible' : `${report.imagesMissingAlt} Missing Alt Texts`, 
-                isAltPassed ? 'All images have alternative descriptions.' : `${report.imagesMissingAlt} image tags are missing alt attributes.`,
+                isAltPassed ? 'All Images Accessible' : `${report.missingAltImages} Missing Alt Texts`, 
+                isAltPassed ? 'All images have alternative descriptions.' : `${report.missingAltImages} image tags are missing alt attributes.`,
                 !isAltPassed // Warn/Error if alt missing
               )}
             </div>
@@ -190,7 +190,7 @@ export default function ReportCard({ report }: ReportCardProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {renderStatusChip(
                 isResponseTimePassed, 
-                `Response Time: ${report.responseTimeMs}ms`, 
+                `Response Time: ${report.responseTime}ms`, 
                 isResponseTimePassed ? 'Fast server response time.' : 'Slow response (>500ms), optimize backend payload.',
                 !isResponseTimePassed
               )}

@@ -33,7 +33,19 @@ export async function getHistory(req: AuthenticatedRequest, res: Response, next:
         wordCount: audit.wordCount,
       });
       return {
-        ...audit,
+        id: audit.id,
+        url: audit.url,
+        status: audit.status,
+        responseTime: audit.responseTimeMs,
+        title: audit.title,
+        metaDescription: audit.metaDescription,
+        h1Count: audit.h1Count,
+        missingAltImages: audit.imagesMissingAlt,
+        wordCount: audit.wordCount,
+        score: audit.score,
+        grade: audit.grade,
+        userId: audit.userId,
+        createdAt: audit.createdAt,
         breakdown: scoreResult.breakdownItems,
       };
     });
@@ -75,7 +87,19 @@ export async function getAuditById(req: AuthenticatedRequest, res: Response, nex
     });
 
     res.status(200).json({
-      ...audit,
+      id: audit.id,
+      url: audit.url,
+      status: audit.status,
+      responseTime: audit.responseTimeMs,
+      title: audit.title,
+      metaDescription: audit.metaDescription,
+      h1Count: audit.h1Count,
+      missingAltImages: audit.imagesMissingAlt,
+      wordCount: audit.wordCount,
+      score: audit.score,
+      grade: audit.grade,
+      userId: audit.userId,
+      createdAt: audit.createdAt,
       breakdown: scoreResult.breakdownItems,
     });
   } catch (err) {

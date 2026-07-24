@@ -47,6 +47,8 @@ describe('POST /api/audit API Integration', () => {
 
     expect(auditRes.status).toBe(200);
     expect(auditRes.body.savedToHistory).toBe(true);
+    expect(auditRes.body.responseTime).toBeDefined();
+    expect(auditRes.body.missingAltImages).toBeDefined();
     const auditId = auditRes.body.id;
     expect(auditId).toBeDefined();
 
