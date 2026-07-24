@@ -33,8 +33,28 @@ export default function TrendChart({ audits }: TrendChartProps) {
             <Tooltip
               contentStyle={{ background: '#111827', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff' }}
             />
-            <Line yAxisId="left" type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={3} name="Health Score (0-90)" dot={{ r: 4 }} />
-            <Line yAxisId="right" type="monotone" dataKey="responseTimeMs" stroke="#06b6d4" strokeWidth={2} name="Response Time (ms)" dot={{ r: 4 }} />
+            <Line 
+              yAxisId="left" 
+              type="monotone" 
+              dataKey="score" 
+              stroke="#3DDC97" 
+              strokeWidth={3} 
+              name="Health Score (0-90)" 
+              dot={{ r: 4, fill: '#3DDC97' }} 
+              isAnimationActive={true}
+              animationDuration={800}
+            />
+            <Line 
+              yAxisId="right" 
+              type="monotone" 
+              dataKey="responseTimeMs" 
+              stroke="#06b6d4" 
+              strokeWidth={2} 
+              name="Response Time (ms)" 
+              dot={{ r: 4 }} 
+              isAnimationActive={true}
+              animationDuration={800}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
