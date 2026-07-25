@@ -6,6 +6,36 @@ Mandatory Footer Text: `Built for Digital Heroes Training Task`
 
 ---
 
+## Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph Browser [Browser (React + Vite)]
+        UI[User Interface]
+    end
+
+    subgraph Backend [Backend (Express / Node.js API)]
+        Router[Router] --> AuthGuard[Cookie-Based Auth Guard]
+        Router --> AuditEngine[Audit Engine]
+        AuditEngine --> SSRF[SSRF Guard / DNS Checker]
+        AuditEngine --> Scorer[SEO / Video Scorer]
+    end
+
+    subgraph Database [Database]
+        DB[(PostgreSQL / SQLite via Prisma ORM)]
+    end
+
+    subgraph External [External Target URLs]
+        Target[Website, YouTube, Instagram]
+    end
+
+    UI -->|AJAX requests / Cookie Session| Router
+    AuthGuard -->|ORM queries| DB
+    SSRF -->|Safe fetch requests| Target
+```
+
+---
+
 ## Setup
 
 ### Prerequisites
