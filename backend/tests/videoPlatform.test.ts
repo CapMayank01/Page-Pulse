@@ -133,5 +133,34 @@ describe('Video Platform Detector & Scorer', () => {
       const sum = result.breakdownItems.reduce((acc, item) => acc + item.points, 0);
       expect(Math.max(0, Math.round(sum))).toBe(result.score);
     });
+
+    it('detects and flags Instagram platform-level blocks as Warning with suggestions', async () => {
+      const mockFetch = jest.spyOn(fetcherService, 'fetchUrl').mockResolvedValue({
+        url: 'https://www.instagram.com/accounts/login/?next=/reel/C8P4fRxt22z/',
+        status: 200,
+        responseTimeMs: 200,
+        contentType: 'text/html',
+        html: '<html><head><title>Login • Instagram</title></head><body>login</body></html>',
+      });
+
+      const instagramPlatform = {
+        name: 'Instagram',
+        hosts: ['instagram.com'],
+        isContentUrl: () => true,
+      };
+
+      const result = await analyzeVideoUrl('https://instagram.com/reel/C8P4fRxt22z/', instagramPlatform);
+      // HTTPS (20) + Reachable (10, warning block) + Metadata (0, warning block) + Response Time (20) = 50
+      expect(result.score).toBe(50);
+      expect(result.grade).toBe('D');
+
+      const reachableCheck = result.breakdownItems.find(i => i.check === 'Reachable Link');
+      expect(reachableCheck?.status).toBe('Warning');
+      expect(reachableCheck?.suggestion).toContain('blocks automated requests');
+
+      const metadataCheck = result.breakdownItems.find(i => i.check === 'Video Metadata');
+      expect(metadataCheck?.status).toBe('Warning');
+      expect(metadataCheck?.suggestion).toContain('platform blocked this request');
+    });
   });
 });

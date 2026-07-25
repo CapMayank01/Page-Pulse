@@ -149,5 +149,6 @@ npm test
 
 ## Known Limitations & Future Work
 
+- **Instagram/Social Platform Blocks**: Instagram content checks may show partial results due to platform-level anti-automation measures; this is expected and explained in the diagnostic output.
 - **JavaScript SPA Crawling**: Currently uses cheerio on raw HTML responses; headless browser rendering (e.g. Puppeteer/Playwright) could be added for client-rendered SPAs.
 - **Deep Link Crawling**: Currently audits a single page; multi-page link crawling can be supported in future versions.

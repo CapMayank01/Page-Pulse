@@ -27,19 +27,31 @@ const VIDEO_SUGGESTIONS: Record<string, string> = {
   'Reachable Link': 'Verify that the video page returns a successful HTTP 200 status.',
   'Video Metadata': 'Add OpenGraph (og:video) or Twitter Card (twitter:player) tags to embed properly.',
   'Response Time': 'Optimize platform load speeds — ensure low latency connections.',
-};
+}
+
+function isPlatformBlocked(platform: string, finalUrl: string, html: string): boolean {
+  if (platform === 'Instagram') {
+    return (
+      finalUrl.includes('/accounts/login') ||
+      (!html.includes('window._sharedData') && html.includes('login') && html.length < 5000)
+    );
+  }
+  return false;
+}
 
 export async function analyzeVideoUrl(url: string, platform: VideoPlatformConfig): Promise<VideoScoreResult> {
   const startTime = Date.now();
   let status = 0;
   let responseTime = 0;
   let html = '';
+  let finalUrl = url;
 
   try {
     const fetchResult = await fetchUrl(url);
     status = fetchResult.status;
     responseTime = fetchResult.responseTimeMs;
     html = fetchResult.html;
+    finalUrl = fetchResult.url;
   } catch (err: any) {
     status = err.status || 0;
     responseTime = Date.now() - startTime;
@@ -56,23 +68,49 @@ export async function analyzeVideoUrl(url: string, platform: VideoPlatformConfig
     status: isHttps ? 'Passed' : 'Failed',
   });
 
-  // Check 2: Reachable (20 pts)
-  const isReachable = status >= 200 && status < 300;
-  const reachablePoints = isReachable ? 20 : 0;
-  breakdownItems.push({
-    check: 'Reachable Link',
-    points: reachablePoints,
-    status: isReachable ? 'Passed' : 'Failed',
-  });
+  // Check 2: Reachable (20 pts or 10 pts warning if platform blocked)
+  const blocked = isPlatformBlocked(platform.name, finalUrl, html);
+  let reachablePoints = 0;
 
-  // Check 3: Video metadata present (30 pts)
-  const hasMetadata = html.includes('og:video') || html.includes('twitter:player');
-  const metadataPoints = hasMetadata ? 30 : 0;
-  breakdownItems.push({
-    check: 'Video Metadata',
-    points: metadataPoints,
-    status: hasMetadata ? 'Passed' : 'Failed',
-  });
+  if (blocked) {
+    reachablePoints = 10;
+    breakdownItems.push({
+      check: 'Reachable Link',
+      points: 10,
+      status: 'Warning',
+      suggestion: `${platform.name} blocks automated requests to this content page. This is a platform-level restriction, not a problem with your link.`,
+    });
+  } else {
+    const isReachable = status >= 200 && status < 300;
+    reachablePoints = isReachable ? 20 : 0;
+    breakdownItems.push({
+      check: 'Reachable Link',
+      points: reachablePoints,
+      status: isReachable ? 'Passed' : 'Failed',
+      ...(isReachable ? {} : { suggestion: "This link did not return a successful response — check it's public and correctly typed." }),
+    });
+  }
+
+  // Check 3: Video metadata present (30 pts or Warning if blocked)
+  let metadataPoints = 0;
+  if (blocked) {
+    metadataPoints = 0;
+    breakdownItems.push({
+      check: 'Video Metadata',
+      points: 0,
+      status: 'Warning',
+      suggestion: 'Metadata could not be checked because the platform blocked this request.',
+    });
+  } else {
+    const hasMetadata = html.includes('og:video') || html.includes('twitter:player');
+    metadataPoints = hasMetadata ? 30 : 0;
+    breakdownItems.push({
+      check: 'Video Metadata',
+      points: metadataPoints,
+      status: hasMetadata ? 'Passed' : 'Failed',
+      ...(hasMetadata ? {} : { suggestion: 'Add og:video or twitter:player meta tags so the link unfurls properly when shared.' }),
+    });
+  }
 
   // Check 4: Response time (20 pts, scaled)
   let responseTimePoints = 0;
@@ -96,9 +134,9 @@ export async function analyzeVideoUrl(url: string, platform: VideoPlatformConfig
     status: responseTimeStatus,
   });
 
-  // Attach suggestions to non-Passed checks
+  // Attach suggestions to non-Passed checks if not already set
   const itemsWithSuggestions = breakdownItems.map((item) => {
-    if (item.status !== 'Passed') {
+    if (item.status !== 'Passed' && !item.suggestion) {
       return {
         ...item,
         suggestion: VIDEO_SUGGESTIONS[item.check],
