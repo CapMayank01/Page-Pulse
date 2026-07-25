@@ -1,137 +1,35 @@
 # Page Pulse — Master Website Audit & SEO Health Scanner
 
-Page Pulse is a full-stack website auditing platform that takes a target URL, analyzes its HTTP health, load time, and core SEO metrics (title, meta description, H1 heading count, missing image alt text, word count), and calculates a composite 0–100 health score with an assigned letter grade. Users can also log in to automatically persist audit logs and monitor site performance trends through visual analytics charts.
+Page Pulse is a full-stack website auditing platform that takes a target URL, analyzes its HTTP health, load time, and core SEO metrics (title, meta description, H1 heading count, missing image alt text, word count), and calculates a composite health score with an assigned letter grade. Users can also log in to automatically persist audit logs and monitor site performance trends through visual analytics charts.
+
+Mandatory Footer Text: `Built for Digital Heroes Training Task`
 
 ---
 
-## Mandatory Requirement — Footer
+## Setup
 
-Every page on Page Pulse (Home, Login, Register, Dashboard) renders the mandatory footer text:
+### Prerequisites
+- Node.js 18+
+- PostgreSQL (local, or a hosted instance — Render/Supabase/Railway all work with Prisma)
 
-```
-Built for Digital Heroes Training Task
-```
-
-Implemented via a single shared `<Footer />` component mounted in the root layout (`App.tsx`) outside `<Routes>` so it persists across all routes.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Backend** | Node.js, Express, TypeScript |
-| **Parsing** | Cheerio |
-| **HTTP Fetch** | Axios (with 10s timeout, 5MB content-length cap, signal abort) |
-| **Database** | PostgreSQL / SQLite + Prisma ORM |
-| **Auth** | JWT (`jsonwebtoken`) + `bcrypt` password hashing |
-| **Rate Limiting** | `express-rate-limit` (10/min anon, 30/min auth for audit; 5/min for auth) |
-| **Logging** | `pino` + `pino-http` |
-| **Frontend** | React, Vite, TypeScript |
-| **Analytics Charts** | Recharts |
-| **Design / Icons** | Glassmorphism Vanilla CSS, Lucide Icons |
-
----
-
-## API Contract & Error Table
-
-### `POST /api/audit`
-- **Headers**: `Authorization: Bearer <token>` (optional)
-- **Body**: `{ "url": "https://example.com" }`
-
-#### Success Response (`200 OK`)
-```json
-{
-  "url": "https://example.com",
-  "status": 200,
-  "responseTimeMs": 342,
-  "title": "Example Domain",
-  "metaDescription": "This domain is for use in illustrative examples...",
-  "h1Count": 1,
-  "imagesMissingAlt": 3,
-  "wordCount": 187,
-  "contentType": "text/html",
-  "score": 78,
-  "grade": "B",
-  "savedToHistory": true
-}
-```
-
-#### Standardized Error Response Shape
-```json
-{
-  "error": {
-    "code": "TIMEOUT",
-    "message": "The site took too long to respond (>10s)."
-  }
-}
-```
-
-| Code | HTTP | Trigger Description |
-|---|---|---|
-| `INVALID_URL` | 400 | Malformed URL / non-http(s) protocol |
-| `BLOCKED_HOST` | 400 | SSRF guard triggered (localhost, 127.0.0.1, private IP ranges) |
-| `UNREACHABLE` | 502 | DNS resolution failure or network connection failure |
-| `TIMEOUT` | 504 | Target host did not respond within 10s timeout |
-| `NON_HTML` | 415 | Response content-type isn't text/html |
-| `TOO_LARGE` | 413 | Response payload exceeds 5MB size limit |
-| `RATE_LIMITED` | 429 | Rate limit exceeded |
-| `UNAUTHORIZED` | 401 | Missing/invalid JWT on protected route |
-| `INTERNAL_ERROR` | 500 | Unexpected server error |
-
-### Auth & History Endpoints
-
-| Endpoint | Method | Auth Required | Description |
-|---|---|---|---|
-| `/api/auth/register` | POST | No | `{ email, password }` → Creates account & returns JWT |
-| `/api/auth/login` | POST | No | `{ email, password }` → Authenticates & returns JWT |
-| `/api/history` | GET | Yes | Paginated list of user's past audits |
-| `/api/history/:id` | GET | Yes | Retrieve full audit record details |
-| `/api/history/:id` | DELETE | Yes | Delete a specific saved audit record |
-
----
-
-## Scoring Formula Breakdown
-
-| Metric Check | Maximum Points | Scoring Rule |
-|---|---|---|
-| **Title Tag** | 15 pts | Present & non-empty |
-| **Meta Description** | 15 pts | Present & non-empty |
-| **H1 Heading Count** | 20 pts | Exactly 1 H1 (0 or 2+ gets 0 pts) |
-| **Image Alt Text** | 20 pts | 20 pts max; −5 per image missing alt (floor 0) |
-| **Response Time** | 20 pts | 20 pts if <500ms; linearly scales to 0 pts at ≥3000ms |
-| **Word Count** | 20 pts | Word count ≥ 300 words |
-
-**Grade Scale**: **A** (90–100), **B** (75–89), **C** (60–74), **D** (40–59), **F** (<40).
-
----
-
-## Local Setup & Development
-
-### 1. Backend Setup
+### Backend
 ```bash
 cd backend
+cp .env.example .env        # fill in DATABASE_URL, JWT_SECRET, FRONTEND_URL
 npm install
-npx prisma generate
-npx prisma db push
+npx prisma db push          # applies schema to your local DB without migrations overhead
 npm run dev
 ```
 
-### 2. Frontend Setup
+### Frontend
 ```bash
 cd frontend
+cp .env.example .env        # set VITE_API_URL=http://localhost:3000
 npm install
 npm run dev
 ```
 
-The frontend will run at `http://localhost:5173` and proxy requests to `http://localhost:3000`.
-
----
-
-## Running Tests
-
-Run backend unit tests for scoring calculations, Cheerio HTML analyzer, and API integration paths:
-
+### Running tests
 ```bash
 cd backend
 npm test
@@ -139,16 +37,80 @@ npm test
 
 ---
 
-## Deployment Instructions
+## API Contract
 
-1. **Backend**: Deploy to Render / Railway. Set environment variables (`DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `NODE_ENV=production`).
-2. **Database**: Use Render Postgres, Supabase, or Railway Postgres. Run `npx prisma migrate deploy` in build/deploy command.
-3. **Frontend**: Deploy to Vercel or Netlify. Set `VITE_API_URL` to your deployed backend URL.
+### `POST /api/audit`
+Runs an audit against a URL and returns a scored report. No authentication required.
+
+**Request**
+```json
+{ "url": "https://example.com" }
+```
+
+**Response — 200**
+```json
+{
+  "score": 62,
+  "grade": "D",
+  "breakdown": [
+    { "check": "Title Tag", "points": 15, "status": "Passed" },
+    { "check": "Meta Description", "points": 0, "status": "Failed", "suggestion": "Add a meta description under 160 characters." }
+  ],
+  "responseTime": 340,
+  "missingAltImages": 3
+}
+```
+
+**Response — video/streaming URLs (YouTube, Instagram)**
+```json
+{
+  "mode": "video",
+  "platform": "YouTube",
+  "score": 70,
+  "grade": "B",
+  "breakdown": [
+    { "check": "HTTPS Support", "points": 20, "status": "Passed" },
+    { "check": "Reachable Link", "points": 20, "status": "Passed" },
+    { "check": "Video Metadata", "points": 30, "status": "Passed" },
+    { "check": "Response Time", "points": 0, "status": "Failed", "suggestion": "Optimize platform load speeds — ensure low latency connections." }
+  ]
+}
+```
+
+**Error responses**
+| Status | Code | Meaning |
+|---|---|---|
+| 400 | `BLOCKED_HOST` | URL resolves to a private/loopback IP (SSRF guard) |
+| 400 | `INVALID_URL` | Malformed or non-HTTP(S) URL |
+| 408 / 504 | `TIMEOUT` | Target did not respond within the timeout window |
+| 429 | `RATE_LIMITED` | Too many requests from this IP/account |
+
+### `POST /api/auth/register`, `POST /api/auth/login`
+Sets an httpOnly session cookie on success. No token is returned in the response body.
+
+### `GET /api/history`
+Requires auth (cookie). Returns saved audits for the logged-in user, each with a dynamically reconstructed `breakdown`.
+
+### `DELETE /api/history/:id`
+Requires auth. Deletes a saved audit.
 
 ---
 
-## Known Limitations & Future Work
+## Three Design Decisions
 
-- **Instagram/Social Platform Blocks**: Instagram content checks may show partial results due to platform-level anti-automation measures; this is expected and explained in the diagnostic output.
-- **JavaScript SPA Crawling**: Currently uses cheerio on raw HTML responses; headless browser rendering (e.g. Puppeteer/Playwright) could be added for client-rendered SPAs.
-- **Deep Link Crawling**: Currently audits a single page; multi-page link crawling can be supported in future versions.
+**1. Cookie-based auth instead of returning a JWT in the response body.**
+Storing a JWT in `localStorage` and reading it in JavaScript makes the token vulnerable to Cross-Site Scripting (XSS) attacks — any injected malicious script can read it. By setting an `httpOnly` session cookie from the backend, client-side scripts are entirely blocked from reading it, securing user sessions. The tradeoff is strict CORS configurations (`credentials: true` on both ends) and cookie management across domains, which is worth the significant security gains.
+
+**2. Renaming API response fields without touching the database schema.**
+Partway through the build, field names needed to change (`responseTimeMs` → `responseTime`, `imagesMissingAlt` → `missingAltImages`) to comply with the final spec. Renaming the actual database columns would have required creating migrations that rewrite historical columns, carrying potential downtime or data corruption risks. By keeping the existing database columns and mapping the fields at the controller/DTO layer before responding, the data storage tier remains stable and backward-compatible.
+
+**3. Making the scoring breakdown a first-class, itemized part of the response instead of just returning a single number.**
+Most audit tools return a single composite score and leave the detailed arithmetic calculations hidden. Returning every point deduction as a labeled `{ check, points, status, suggestion }` object allows the frontend to immediately render the interactive "Why this score?" drawer without additional API overhead. Furthermore, it enforces clear invariants (such as `sum(breakdownItems.points) === score`) which makes scoring logic highly testable.
+
+---
+
+## Known Limitations
+
+- **Instagram content checks may return partial results.** Instagram blocks automated/non-browser requests to content pages, redirecting to a login wall. Rather than fake a result, the audit reports this honestly as a `Warning` with an explanatory suggestion, with partial credit for a valid, reachable link.
+- **Video/streaming diagnostics currently cover YouTube and Instagram only** — the platform-detection config is intentionally structured to make adding more platforms (e.g. TikTok, Vimeo) a small addition, not a rewrite.
+- **Video-mode audits are saved to history** when audited by authenticated users, preserving their score, platform, and check diagnostics logs over time.

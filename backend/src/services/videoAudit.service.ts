@@ -31,9 +31,11 @@ const VIDEO_SUGGESTIONS: Record<string, string> = {
 
 function isPlatformBlocked(platform: string, finalUrl: string, html: string): boolean {
   if (platform === 'Instagram') {
+    const lowerHtml = html.toLowerCase();
+    const hasMeta = html.includes('og:video') || html.includes('twitter:player');
     return (
       finalUrl.includes('/accounts/login') ||
-      (!html.includes('window._sharedData') && html.includes('login') && html.length < 5000)
+      (lowerHtml.includes('login') && !hasMeta)
     );
   }
   return false;
