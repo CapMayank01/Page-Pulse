@@ -16,6 +16,8 @@ export interface AuditReport {
   score: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
   savedToHistory: boolean;
+  mode?: 'video';
+  platform?: string;
   breakdown?: Array<{
     check: string;
     points: number;

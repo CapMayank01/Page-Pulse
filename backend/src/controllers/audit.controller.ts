@@ -5,6 +5,8 @@ import { validateAndSanitizeUrl } from '../utils/validateUrl';
 import { fetchUrl } from '../services/fetcher.service';
 import { analyzeHtml } from '../services/analyzer.service';
 import { calculateScore } from '../services/scoring.service';
+import { detectVideoPlatform } from '../services/videoPlatform.detector';
+import { analyzeVideoUrl } from '../services/videoAudit.service';
 
 const prisma = new PrismaClient();
 
@@ -12,6 +14,58 @@ export async function runAudit(req: AuthenticatedRequest, res: Response, next: N
   try {
     const { url } = req.body;
     const sanitizedUrl = validateAndSanitizeUrl(url);
+
+    // Intercept video platforms before general HTML crawls
+    const platform = detectVideoPlatform(sanitizedUrl.toString());
+    if (platform) {
+      const videoResult = await analyzeVideoUrl(sanitizedUrl.toString(), platform);
+
+      let savedToHistory = false;
+      let auditRecordId: string | undefined;
+
+      if (req.user && req.user.userId) {
+        try {
+          const savedAudit = await prisma.audit.create({
+            data: {
+              url: sanitizedUrl.toString(),
+              status: videoResult.status,
+              responseTimeMs: videoResult.responseTime,
+              title: `${platform.name} Video`,
+              metaDescription: `Video/Streaming platform content page.`,
+              h1Count: 0,
+              imagesMissingAlt: 0,
+              wordCount: 0,
+              score: videoResult.score,
+              grade: videoResult.grade,
+              userId: req.user.userId,
+            },
+          });
+          savedToHistory = true;
+          auditRecordId = savedAudit.id;
+        } catch (dbErr) {
+          console.error('Failed to save video audit history:', dbErr);
+        }
+      }
+
+      return res.status(200).json({
+        id: auditRecordId,
+        url: sanitizedUrl.toString(),
+        status: videoResult.status,
+        responseTime: videoResult.responseTime,
+        title: `${platform.name} Video`,
+        metaDescription: `Video/Streaming platform content page.`,
+        h1Count: 0,
+        missingAltImages: 0,
+        wordCount: 0,
+        contentType: 'text/html',
+        score: videoResult.score,
+        grade: videoResult.grade,
+        breakdown: videoResult.breakdownItems,
+        savedToHistory,
+        mode: 'video',
+        platform: platform.name,
+      });
+    }
 
     // Fetch site
     const fetchResult = await fetchUrl(sanitizedUrl.toString());

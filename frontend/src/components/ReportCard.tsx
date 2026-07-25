@@ -52,6 +52,142 @@ export default function ReportCard({ report }: ReportCardProps) {
   const isResponseTimePassed = report.responseTime < 500;
   const isStatusPassed = report.status === 200;
 
+  if (report.mode === 'video') {
+    return (
+      <div className="glass-card" style={{ marginTop: '2rem', maxWidth: '720px', marginInline: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem', marginBottom: '1.75rem' }}>
+          <div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Globe size={14} style={{ color: 'var(--accent-pulse)' }} /> Audit Target URL
+            </span>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', wordBreak: 'break-all', marginTop: '0.35rem', fontFamily: 'var(--font-display)' }}>
+              {report.url}
+            </h2>
+          </div>
+          {report.savedToHistory && (
+            <span style={{ background: 'rgba(61, 220, 151, 0.08)', color: 'var(--accent-pulse)', border: '1px solid rgba(61, 220, 151, 0.25)', padding: '0.35rem 0.75rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.02em', height: 'fit-content' }}>
+              <ShieldCheck size={14} /> Saved
+            </span>
+          )}
+        </div>
+
+        <div className="report-grid">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', alignSelf: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
+              <span style={{ background: 'rgba(61, 220, 151, 0.1)', color: 'var(--accent-pulse)', padding: '0.25rem 0.75rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {report.platform || 'Streaming Content'}
+              </span>
+              <ScoreGauge score={report.score} grade={report.grade} />
+            </div>
+            {report.breakdown && report.breakdown.length > 0 && (
+              <div style={{ width: '100%', textAlign: 'center' }}>
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="btn-secondary"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.4rem 0.75rem',
+                    border: '1px dashed var(--border-color)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    color: 'var(--accent-pulse)'
+                  }}
+                  aria-expanded={expanded}
+                >
+                  {expanded ? 'Hide scoring math' : 'Why this score?'}
+                </button>
+                {expanded && (
+                  <div
+                    style={{
+                      marginTop: '0.75rem',
+                      width: '100%',
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {report.breakdown.map((item, idx) => {
+                        const itemColor = item.status === 'Passed' 
+                          ? 'var(--grade-a)' 
+                          : (item.status === 'Warning' ? 'var(--grade-c)' : 'var(--grade-f)');
+                        const prefixIcon = item.status === 'Passed' ? '✓' : (item.status === 'Warning' ? '⚠' : '✕');
+                        return (
+                          <li
+                            key={idx}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'stretch',
+                              fontSize: '0.75rem',
+                              fontFamily: 'var(--font-display)',
+                              borderBottom: idx < report.breakdown!.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
+                              paddingBottom: '0.5rem',
+                              paddingTop: '0.25rem',
+                              color: 'var(--text-primary)',
+                              gap: '0.2rem'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', textAlign: 'left', fontWeight: 600 }}>
+                                <span style={{ color: itemColor, fontWeight: 800 }}>{prefixIcon}</span>
+                                {item.check}
+                              </span>
+                              <span style={{ color: item.points < 0 ? 'var(--grade-f)' : (item.points === 0 ? 'var(--text-muted)' : 'var(--grade-a)'), fontWeight: 700, paddingLeft: '0.5rem' }}>
+                                {item.points > 0 ? `+${item.points}` : (item.points === 0 ? '—' : item.points)}
+                              </span>
+                            </div>
+                            {item.suggestion && (
+                              <div style={{ fontSize: '0.7rem', color: '#A3B3C2', paddingLeft: '1.15rem', textAlign: 'left', lineHeight: 1.4 }}>
+                                {item.suggestion}
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="report-section">
+              <h4 className="report-section-title">Streaming diagnostics</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {renderStatusChip(
+                  report.url.toLowerCase().startsWith('https://'),
+                  report.url.toLowerCase().startsWith('https://') ? 'Secure HTTPS' : 'Insecure HTTP',
+                  report.url.toLowerCase().startsWith('https://') ? 'Safe transport enabled.' : 'Target URL does not use SSL.'
+                )}
+                {renderStatusChip(
+                  report.status >= 200 && report.status < 300,
+                  `HTTP Status ${report.status}`,
+                  report.status >= 200 && report.status < 300 ? 'Video page accessible.' : `Server returned status code: ${report.status}`
+                )}
+                {renderStatusChip(
+                  report.breakdown?.some(i => i.check === 'Video Metadata' && i.status === 'Passed') || false,
+                  report.breakdown?.some(i => i.check === 'Video Metadata' && i.status === 'Passed') ? 'Metadata Found' : 'Missing Video Metadata',
+                  report.breakdown?.some(i => i.check === 'Video Metadata' && i.status === 'Passed') ? 'og:video or twitter:player present.' : 'Missing embed crawler metadata.'
+                )}
+                {renderStatusChip(
+                  report.responseTime < 500,
+                  `Response Time: ${report.responseTime}ms`,
+                  report.responseTime < 500 ? 'Optimal platform loading speeds.' : 'Suboptimal latency measured.'
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="glass-card" style={{ marginTop: '2rem', maxWidth: '720px', marginInline: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem', marginBottom: '1.75rem' }}>
