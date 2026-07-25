@@ -11,7 +11,7 @@ export async function handleRegister(req: Request, res: Response, next: NextFunc
     res.cookie('token', result.token, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -29,7 +29,7 @@ export async function handleLogin(req: Request, res: Response, next: NextFunctio
     res.cookie('token', result.token, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -43,7 +43,7 @@ export async function handleLogout(req: Request, res: Response, next: NextFuncti
   res.clearCookie('token', {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'lax',
+    sameSite: isProd ? 'none' : 'lax',
   });
   res.status(200).json({ success: true, message: 'Logged out successfully.' });
 }
