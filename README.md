@@ -10,23 +10,23 @@ Mandatory Footer Text: `Built for Digital Heroes Training Task`
 
 ```mermaid
 graph TD
-    subgraph Browser [Browser (React + Vite)]
-        UI[User Interface]
+    subgraph Browser ["Browser (React + Vite)"]
+        UI["User Interface"]
     end
 
-    subgraph Backend [Backend (Express / Node.js API)]
-        Router[Router] --> AuthGuard[Cookie-Based Auth Guard]
-        Router --> AuditEngine[Audit Engine]
-        AuditEngine --> SSRF[SSRF Guard / DNS Checker]
-        AuditEngine --> Scorer[SEO / Video Scorer]
+    subgraph Backend ["Backend (Express / Node.js API)"]
+        Router["Router"] --> AuthGuard["Cookie-Based Auth Guard"]
+        Router --> AuditEngine["Audit Engine"]
+        AuditEngine --> SSRF["SSRF Guard / DNS Checker"]
+        AuditEngine --> Scorer["SEO / Video Scorer"]
     end
 
-    subgraph Database [Database]
-        DB[(PostgreSQL / SQLite via Prisma ORM)]
+    subgraph Database ["Database"]
+        DB[("PostgreSQL / SQLite via Prisma ORM")]
     end
 
-    subgraph External [External Target URLs]
-        Target[Website, YouTube, Instagram]
+    subgraph External ["External Target URLs"]
+        Target["Website, YouTube, Instagram"]
     end
 
     UI -->|AJAX requests / Cookie Session| Router
