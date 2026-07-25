@@ -17,7 +17,7 @@ Mandatory Footer Text: `Built for Digital Heroes Training Task`
 cd backend
 cp .env.example .env        # fill in DATABASE_URL, JWT_SECRET, FRONTEND_URL
 npm install
-npx prisma db push          # applies schema to your local DB without migrations overhead
+npx prisma migrate dev      # creates and applies migrations locally
 npm run dev
 ```
 
