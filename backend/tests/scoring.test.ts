@@ -143,4 +143,21 @@ describe('Scoring Service', () => {
       expect(Math.max(0, Math.round(sum))).toBe(result.score);
     });
   });
+
+  it('attaches a suggestion to every failed/warning breakdown item', () => {
+    const result = calculateScore({
+      title: '',
+      metaDescription: '',
+      h1Count: 0,
+      responseTimeMs: 3500,
+      wordCount: 150,
+      imagesMissingAlt: 5,
+    });
+    const failedItems = result.breakdownItems.filter(i => i.status !== 'Passed');
+    expect(failedItems.length).toBeGreaterThan(0);
+    failedItems.forEach(item => {
+      expect(item.suggestion).toBeDefined();
+      expect(item.suggestion?.length).toBeGreaterThan(0);
+    });
+  });
 });

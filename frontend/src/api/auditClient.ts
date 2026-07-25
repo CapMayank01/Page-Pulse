@@ -20,6 +20,7 @@ export interface AuditReport {
     check: string;
     points: number;
     status: 'Passed' | 'Warning' | 'Failed';
+    suggestion?: string;
   }>;
 }
 

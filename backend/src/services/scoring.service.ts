@@ -24,11 +24,21 @@ export interface ScoreResult {
     check: string;
     points: number;
     status: 'Passed' | 'Warning' | 'Failed';
+    suggestion?: string;
   }>;
 }
 
+const SUGGESTIONS: Record<string, string> = {
+  'Title Tag': 'Add a concise, unique <title> — aim for 50–60 characters.',
+  'Meta Description': 'Add a meta description under 160 characters summarizing the page.',
+  'H1 Headings': 'Use exactly one <h1> per page — currently 0 or 2+ were found.',
+  'Word Count': 'Add more content — pages under 300 words score lower on this check.',
+  'Image Alt Tags': 'Add descriptive alt attributes to images missing them.',
+  'Response Time': 'Reduce server/TTFB latency — consider caching or a CDN.',
+};
+
 export function calculateScore(input: ScoreInput): ScoreResult {
-  const breakdownItems: Array<{ check: string; points: number; status: 'Passed' | 'Warning' | 'Failed' }> = [];
+  const breakdownItems: Array<{ check: string; points: number; status: 'Passed' | 'Warning' | 'Failed'; suggestion?: string }> = [];
 
   // Title (15 pts)
   const titlePoints = input.title && input.title.trim().length > 0 ? 15 : 0;
@@ -104,6 +114,16 @@ export function calculateScore(input: ScoreInput): ScoreResult {
 
   logger.info({ score, grade }, 'Score calculated successfully');
 
+  const itemsWithSuggestions = breakdownItems.map((item) => {
+    if (item.status !== 'Passed') {
+      return {
+        ...item,
+        suggestion: SUGGESTIONS[item.check],
+      };
+    }
+    return item;
+  });
+
   return {
     score,
     grade,
@@ -115,6 +135,6 @@ export function calculateScore(input: ScoreInput): ScoreResult {
       responseTimePoints,
       wordCountPoints,
     },
-    breakdownItems,
+    breakdownItems: itemsWithSuggestions,
   };
 }

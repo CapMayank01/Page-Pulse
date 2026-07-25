@@ -115,22 +115,31 @@ export default function ReportCard({ report }: ReportCardProps) {
                           key={idx}
                           style={{
                             display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            fontSize: '0.7rem',
+                            flexDirection: 'column',
+                            alignItems: 'stretch',
+                            fontSize: '0.75rem',
                             fontFamily: 'var(--font-display)',
                             borderBottom: idx < report.breakdown!.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
-                            paddingBottom: '0.35rem',
-                            color: 'var(--text-primary)'
+                            paddingBottom: '0.5rem',
+                            paddingTop: '0.25rem',
+                            color: 'var(--text-primary)',
+                            gap: '0.2rem'
                           }}
                         >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', textAlign: 'left' }}>
-                            <span style={{ color: itemColor, fontWeight: 800 }}>{prefixIcon}</span>
-                            {item.check}
-                          </span>
-                          <span style={{ color: item.points < 0 ? 'var(--grade-f)' : (item.points === 0 ? 'var(--text-muted)' : 'var(--grade-a)'), fontWeight: 700, paddingLeft: '0.5rem' }}>
-                            {item.points > 0 ? `+${item.points}` : (item.points === 0 ? '—' : item.points)}
-                          </span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', textAlign: 'left', fontWeight: 600 }}>
+                              <span style={{ color: itemColor, fontWeight: 800 }}>{prefixIcon}</span>
+                              {item.check}
+                            </span>
+                            <span style={{ color: item.points < 0 ? 'var(--grade-f)' : (item.points === 0 ? 'var(--text-muted)' : 'var(--grade-a)'), fontWeight: 700, paddingLeft: '0.5rem' }}>
+                              {item.points > 0 ? `+${item.points}` : (item.points === 0 ? '—' : item.points)}
+                            </span>
+                          </div>
+                          {item.suggestion && (
+                            <div style={{ fontSize: '0.7rem', color: '#A3B3C2', paddingLeft: '1.15rem', textAlign: 'left', lineHeight: 1.4 }}>
+                              {item.suggestion}
+                            </div>
+                          )}
                         </li>
                       );
                     })}
